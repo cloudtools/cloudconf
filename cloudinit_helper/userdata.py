@@ -5,46 +5,51 @@ import base64
 
 import yaml
 
+BOUNDARY = '--===============BOUNDARY==--'
+
 
 class UserData(object):
-    def __init__(self, shell_scripts=[], handler_files=[], include_urls=[],
-                 cloud_config={}, boot_hooks=[]):
+    def __init__(self, boundary=None):
         self.parts = []
+        self.boundary = boundary or BOUNDARY
 
-        for f in shell_scripts:
-            self.add_shell_script(f)
+    def add_part(self, mimetype, content=None, file_or_fd=None):
+        _contents = None
+        if content and file_or_fd:
+            raise Exception("'content' and 'file_or_fd' arguments are "
+                            "mutually exclusive.")
+        if content:
+            _contents = content
+        elif file_or_fd:
+            _contents = self.get_file_contents(file_or_fd)
+        else:
+            raise Exception("Must specify either 'content' or 'file_or_fd' "
+                            "arguments.")
+        self.parts.append((mimetype, _contents))
 
-        for f in handler_files:
-            self.add_handler(f)
+    def get_file_contents(self, file_or_fd):
+        try:
+            return file_or_fd.read()
+        except AttributeError:
+            with open(file_or_fd) as fd:
+                return fd.read()
 
-        for u in include_urls:
-            self.add_include_url(u)
+    def add_shell_script(self, content=None, file_or_fd=None):
+        self.add_file_or_fd_part('text/x-shellscript', content, file_or_fd)
 
-        for f in boot_hooks:
-            self.add_boothook(f)
-
-        if cloud_config:
-            self.add_cloudconfig(cloud_config)
-
-    def add_part(self, mimetype, content):
-        self.parts.append((mimetype, content))
-
-    def add_shell_script(self, filename):
-        self.add_part('text/x-shellscript', open(filename).read())
-
-    def add_handler(self, filename):
-        self.add_part('text/part-handler', open(filename).read())
+    def add_handler(self, content=None, file_or_fd=None):
+        self.add_file_or_fd_part('text/part-handler', content, file_or_fd)
 
     def add_include_url(self, url):
         self.add_part('text/x-include-url', url)
 
-    def add_cloudconfig(self, config):
-        if isinstance(config, MutableMapping):
-            config = yaml.dump(config)
-        self.add_part('text/cloud-config', config)
+    def add_cloudconfig(self, content=None, file_or_fd=None):
+        if content and isinstance(content, MutableMapping):
+            content = yaml.dump(config)
+        self.add_part('text/cloud-config', content, file_or_fd)
 
-    def add_boothook(self, filename):
-        self.add_part('text/cloud-boothook', open(filename).read())
+    def add_boothook(self, content=None, file_or_fd=None):
+        self.add_file_or_fd_part('text/cloud-boothook', content, file_or_fd)
 
     def _new_mime_part(self, container, content_type, payload):
         message = Message()
@@ -54,8 +59,7 @@ class UserData(object):
         container.attach(message)
 
     def to_mime_text(self):
-        container = MIMEMultipart(boundary='--===============BOUNDARY==--')
-        container._unixfrom = '## not necessary'
+        container = MIMEMultipart(boundary=self.boundary)
         for part in self.parts:
             self._new_mime_part(container, part[0], part[1])
         return container.as_string()
