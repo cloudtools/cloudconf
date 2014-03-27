@@ -7,7 +7,8 @@ import yaml
 
 
 class UserData(object):
-    def __init__(self, shell_scripts=[], handler_files=[], include_urls=[]):
+    def __init__(self, shell_scripts=[], handler_files=[], include_urls=[],
+                 cloud_config={}, boot_hooks=[]):
         self.parts = []
 
         for f in shell_scripts:
@@ -18,6 +19,12 @@ class UserData(object):
 
         for u in include_urls:
             self.add_include_url(u)
+
+        for f in boot_hooks:
+            self.add_boothook(f)
+
+        if cloud_config:
+            self.add_cloudconfig(cloud_config)
 
     def add_part(self, mimetype, content):
         self.parts.append((mimetype, content))
@@ -35,6 +42,9 @@ class UserData(object):
         if isinstance(config, MutableMapping):
             config = yaml.dump(config)
         self.add_part('text/cloud-config', config)
+
+    def add_boothook(self, filename):
+        self.add_part('text/cloud-boothook', open(filename).read())
 
     def _new_mime_part(self, container, content_type, payload):
         message = Message()
