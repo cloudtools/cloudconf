@@ -13,7 +13,7 @@ def read(filename):
 if __name__ == '__main__':
     setup(
         name='cloudconf',
-        version='0.1',
+        version='0.1.1',
         author='Michael Barrett',
         author_email='loki77@gmail.com',
         license="New BSD license",
