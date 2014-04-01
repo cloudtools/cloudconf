@@ -12,12 +12,12 @@ def read(filename):
 
 if __name__ == '__main__':
     setup(
-        name='cloudinit_helper',
+        name='cloudconf',
         version='0.1',
         author='Michael Barrett',
         author_email='loki77@gmail.com',
         license="New BSD license",
-        url="https://github.com/phobologic/cloudinit_helper",
+        url="https://github.com/phobologic/cloudconf",
         description="Simple helper library for ubuntu's cloudinit.",
         long_description=read('README.rst'),
         classifiers=[
