@@ -45,7 +45,7 @@ class UserData(object):
 
     def add_cloudconfig(self, content=None, file_or_fd=None):
         if content and isinstance(content, MutableMapping):
-            content = yaml.dump(config)
+            content = yaml.dump(content)
         self.add_part('text/cloud-config', content, file_or_fd)
 
     def add_boothook(self, content=None, file_or_fd=None):
