@@ -35,10 +35,10 @@ class UserData(object):
                 return fd.read()
 
     def add_shell_script(self, content=None, file_or_fd=None):
-        self.add_file_or_fd_part('text/x-shellscript', content, file_or_fd)
+        self.add_part('text/x-shellscript', content, file_or_fd)
 
     def add_handler(self, content=None, file_or_fd=None):
-        self.add_file_or_fd_part('text/part-handler', content, file_or_fd)
+        self.add_part('text/part-handler', content, file_or_fd)
 
     def add_include_url(self, url):
         self.add_part('text/x-include-url', url)
@@ -49,7 +49,7 @@ class UserData(object):
         self.add_part('text/cloud-config', content, file_or_fd)
 
     def add_boothook(self, content=None, file_or_fd=None):
-        self.add_file_or_fd_part('text/cloud-boothook', content, file_or_fd)
+        self.add_part('text/cloud-boothook', content, file_or_fd)
 
     def _new_mime_part(self, container, content_type, payload):
         message = Message()
